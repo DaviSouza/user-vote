@@ -7,6 +7,7 @@ import (
 	"user-vote/dto"
 	"user-vote/service"
 
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -40,3 +41,16 @@ func DeleteUser(w http.ResponseWriter, r *http.Request, db *mongo.Database) {
 	service.DeleteUser(id, db)
 	//json.NewEncoder(w).Encode(newUser)
 }
+
+func Balance(w http.ResponseWriter, r *http.Request, client *ethclient.Client) {
+	vars := mux.Vars(r)
+	key := vars["key"] //id owner
+	fmt.Fprint(w, "Home Page")
+}
+
+func Transfer(w http.ResponseWriter, r *http.Request, client *ethclient.Client) {
+	//usar DTO transfer com address, value, idVenda,
+	fmt.Fprint(w, "Home Page")
+}
+
+//criar método criar pedido
