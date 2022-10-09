@@ -17,3 +17,9 @@ type Address struct {
 	State   string `json:"state"`
 	ZipCode string `json:"zipCode"`
 }
+
+type Payment struct {
+	KeySender string `json:"sender"`
+	Recipient string `json:"recipient"`
+	ValuePay  int64  `json:"value"`
+}

@@ -7,14 +7,12 @@ import (
 	"user-vote/database"
 	"user-vote/middleware"
 
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
 func HandleResquest() {
 	r := mux.NewRouter()
-	client := etherResquest()
 	db := database.ConnectDataBase()
 	r.Use(middleware.ContentTypeMiddleware)
 	r.HandleFunc("/", controllers.Home)
@@ -31,16 +29,7 @@ func HandleResquest() {
 	r.HandleFunc("/api/user", func(w http.ResponseWriter, r *http.Request) {
 		controllers.UpdateUser(w, r, db)
 	}).Methods("Put")
-	r.HandleFunc("/api/order/balance", func(w http.ResponseWriter, r *http.Request) {
-		controllers.Balance(w, r, client)
-	})
+	r.HandleFunc("/api/order/balance", controllers.Balance).Methods("Get")
+	//r.HandleFunc("/api/order/transfer", controllers.Transfer).Methods("Post")
 	log.Fatal(http.ListenAndServe(":8000", handlers.CORS(handlers.AllowedOrigins([]string{"*"}))(r)))
-}
-
-func etherResquest() *ethclient.Client {
-	client, err := ethclient.Dial("http://127.0.0.1:7545")
-	if err != nil {
-		panic(err)
-	}
-	return client
 }

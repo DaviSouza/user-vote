@@ -8,6 +8,7 @@ import (
 	"math/big"
 	"time"
 	"user-vote/contracts"
+	"user-vote/dto"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 
@@ -20,7 +21,7 @@ var (
 	DecimalOfPrecision = big.NewInt(1000000000000000000)
 )
 
-func PaymentoUser(privateKeySender string, recipient string, value int64) bool {
+func Transfer(payment dto.Payment) bool {
 
 	client, err := ethclient.Dial("http://localhost:8545")
 	if err != nil {
@@ -28,7 +29,7 @@ func PaymentoUser(privateKeySender string, recipient string, value int64) bool {
 		return false
 	}
 
-	privateKey, err := crypto.HexToECDSA(privateKeySender)
+	privateKey, err := crypto.HexToECDSA(payment.KeySender)
 	if err != nil {
 		log.Fatal(err)
 		return false
@@ -59,11 +60,11 @@ func PaymentoUser(privateKeySender string, recipient string, value int64) bool {
 	auth.GasLimit = uint64(300000) // in units
 	auth.GasPrice = gasPrice
 
-	addressR := common.HexToAddress(recipient)
+	addressR := common.HexToAddress(payment.Recipient)
 	instance, err := contracts.NewContracts(addressR, client)
-	valuePayment := big.NewInt(value)
+	valuePay := big.NewInt(payment.ValuePay)
 
-	tx, err := instance.Transfer(auth, addressR, new(big.Int).Mul(valuePayment, DecimalOfPrecision))
+	tx, err := instance.Transfer(auth, addressR, new(big.Int).Mul(valuePay, DecimalOfPrecision))
 	if err != nil {
 		log.Fatalf("Failed to transfer tokens, got error : %v", err)
 		return false

@@ -4,10 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"user-vote/dto"
+	"user-vote/kafka"
+
 	"user-vote/service"
 
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -39,18 +41,28 @@ func DeleteUser(w http.ResponseWriter, r *http.Request, db *mongo.Database) {
 	vars := mux.Vars(r)
 	id := vars["id"]
 	service.DeleteUser(id, db)
-	//json.NewEncoder(w).Encode(newUser)
 }
 
-func Balance(w http.ResponseWriter, r *http.Request, client *ethclient.Client) {
+func Balance(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	key := vars["key"] //id owner
-	fmt.Fprint(w, "Home Page")
+	key := vars["key"]
+	balance := service.Balance(key)
+	json.NewEncoder(w).Encode(balance)
 }
 
-func Transfer(w http.ResponseWriter, r *http.Request, client *ethclient.Client) {
-	//usar DTO transfer com address, value, idVenda,
-	fmt.Fprint(w, "Home Page")
+func Transfer(w http.ResponseWriter, r *http.Request) {
+	var payment dto.Payment
+	json.NewDecoder(r.Body).Decode(&payment)
+	isPay := service.Transfer(payment)
+	producer := setupKafkaProducer()
+	transactionJson, _ := json.Marshal(isPay)
+	producer.Publish(string(transactionJson), os.Getenv("KafkaTransactionsTopic"))
+}
+
+func setupKafkaProducer() kafka.KafkaProducer {
+	producer := kafka.NewKafkaProducer()
+	producer.SetupProducer(os.Getenv("KafkaBootstrapServers"))
+	return producer
 }
 
 //criar método criar pedido
