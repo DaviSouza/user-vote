@@ -50,19 +50,22 @@ func Balance(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(balance)
 }
 
-func Transfer(w http.ResponseWriter, r *http.Request) {
-	var payment dto.Payment
-	json.NewDecoder(r.Body).Decode(&payment)
-	isPay := service.Transfer(payment)
-	producer := setupKafkaProducer()
-	transactionJson, _ := json.Marshal(isPay)
-	producer.Publish(string(transactionJson), os.Getenv("KafkaTransactionsTopic"))
-}
+func Transfer(w http.ResponseWriter, r *http.Request, producer kafka.KafkaProducer) {
+	var pay dto.Pay
 
-func setupKafkaProducer() kafka.KafkaProducer {
-	producer := kafka.NewKafkaProducer()
-	producer.SetupProducer(os.Getenv("KafkaBootstrapServers"))
-	return producer
+	json.NewDecoder(r.Body).Decode(&pay)
+	//payment = dto.Payment{KeySender: pay.KeySender, Recipient: pay.Recipient, ValuePay: pay.ValuePay}
+	isPay := true //service.Transfer(payment)
+	order := new(dto.Order)
+	if isPay {
+		order.IdGame = pay.IdGame
+		order.IdUser = pay.IdUser
+	} else {
+		order.Erro = "Error in transaction"
+	}
+	transactionJson, _ := json.Marshal(order)
+	producer.Publish(string(transactionJson), os.Getenv("KafkaTransactionsTopic"))
+	json.NewEncoder(w).Encode(order)
 }
 
 //criar método criar pedido

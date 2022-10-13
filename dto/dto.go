@@ -18,8 +18,22 @@ type Address struct {
 	ZipCode string `json:"zipCode"`
 }
 
-type Payment struct {
+type Pay struct {
 	KeySender string `json:"sender"`
 	Recipient string `json:"recipient"`
 	ValuePay  int64  `json:"value"`
+	IdUser    int    `json:"id_user"`
+	IdGame    int    `json:"id_game"`
+}
+
+type Payment struct {
+	KeySender string
+	Recipient string
+	ValuePay  int64
+}
+
+type Order struct {
+	IdUser int    `json:"id_user"`
+	IdGame int    `json:"id_game"`
+	Erro   string `json:"erro"`
 }
